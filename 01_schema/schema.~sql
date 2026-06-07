@@ -1,12 +1,10 @@
---*******************************--
 --=== TASK MANAGER ===--
 --=== Enzo Henrique Favaro ===--
---*******************************--
 
 --=== SCHEMA ===--
 
 /*
-  tm_ = task manager
+  tm = task manager
   _t = table
   _s = sequence
   _i = index
@@ -143,40 +141,7 @@ CREATE TABLE tm_error_log_t(
   error_date DATE DEFAULT SYSDATE
 );
 
---=== SEQUENCES ===--
-
--- USERS
-CREATE SEQUENCE tm_users_s START WITH 1 INCREMENT BY 1;
-
--- TEAMS
-CREATE SEQUENCE tm_teams_s START WITH 1 INCREMENT BY 1;
-
--- TEAM USERS
-CREATE SEQUENCE tm_team_users_s START WITH 1 INCREMENT BY 1;
-
--- PROJECTS
-CREATE SEQUENCE tm_projects_s START WITH 1 INCREMENT BY 1;
-
--- TASKS
-CREATE SEQUENCE tm_tasks_s START WITH 1 INCREMENT BY 1;
-
--- TASKS DEPENDENCIES
-CREATE SEQUENCE tm_task_dependencies_s START WITH 1 INCREMENT BY 1;
-
--- COMMENTS
-CREATE SEQUENCE tm_comments_s START WITH 1 INCREMENT BY 1;
-
--- STATUS HISTORY
-CREATE SEQUENCE tm_status_history_s START WITH 1 INCREMENT BY 1;
-
--- NOTIFICATIONS
-CREATE SEQUENCE tm_notifications_s START WITH 1 INCREMENT BY 1;
-
--- AUDITORY LOG
-CREATE SEQUENCE tm_auditory_log_s START WITH 1 INCREMENT BY 1;
-
--- ERROR LOG
-CREATE SEQUENCE tm_error_log_s START WITH 1 INCREMENT BY 1;
+-- SEQUENCES --
 
 
 -- CONSTRAINTS --
