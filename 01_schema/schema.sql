@@ -6,13 +6,17 @@
 --=== SCHEMA ===--
 
 /*
+
   tm_ = task manager
   _t = table
   _s = sequence
   _i = index
+  
 */
 
+--*********************--
 --=== DOMAIN TABLES ===--
+--*********************--
 
 -- STATUS
 CREATE TABLE tm_status_t(
@@ -28,7 +32,9 @@ CREATE TABLE tm_priorities_t(
   level_priority NUMBER NOT NULL UNIQUE -- represents the level order (1 = low until 4 = critic)
 );
 
+--*********************--
 --=== MAIN TABLES ===--
+--*********************--
 
 -- USERS
 CREATE TABLE tm_users_t(
@@ -37,7 +43,8 @@ CREATE TABLE tm_users_t(
   email_user VARCHAR2(255) NOT NULL UNIQUE,
   job_title_user VARCHAR2(255),
   register_date DATE DEFAULT SYSDATE,
-  active CHAR(1) DEFAULT 'Y'
+  active CHAR(1) DEFAULT 'Y',
+  CONSTRAINT chk_active CHECK (active IN ('Y','N'))
 );
 
 -- TEAMS
@@ -51,10 +58,11 @@ CREATE TABLE tm_teams_t(
 -- TEAM USERS
 CREATE TABLE tm_team_users_t(
   id_team_users  NUMBER PRIMARY KEY,
-  id_team NUMBER NOT NULL,
-  id_user NUMBER NOT NULL,
+  id_team NUMBER NOT NULL REFERENCES tm_teams_t(id_team),
+  id_user NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   job_title VARCHAR2(20) NOT NULL,
-  entry_date DATE DEFAULT SYSDATE
+  entry_date DATE DEFAULT SYSDATE,
+  CONSTRAINT chk_job_title CHECK (job_title IN ('MEMBER','LEADER'))
 );
 
 -- PROJECTS
@@ -65,10 +73,11 @@ CREATE TABLE tm_projects_t(
   start_date DATE NOT NULL,
   previous_end_date DATE NOT NULL,
   end_date DATE,
-  id_status NUMBER NOT NULL,
-  id_priority NUMBER NOT NULL,
-  id_responsable NUMBER NOT NULL,
-  creation_date  DATE DEFAULT SYSDATE
+  id_status NUMBER NOT NULL REFERENCES tm_status_t(id_status),
+  id_priority NUMBER NOT NULL REFERENCES tm_priorities_t(id_priority),
+  id_responsable NUMBER NOT NULL REFERENCES tm_users_t(id_user),
+  creation_date  DATE DEFAULT SYSDATE,
+  CONSTRAINT chk_project_date CHECK (previous_end_date > start_date)
 );
 
 -- TASKS
@@ -79,26 +88,27 @@ CREATE TABLE tm_tasks_t(
   start_date DATE,
   previous_end_date DATE,
   end_date DATE,
-  id_status NUMBER NOT NULL,
-  id_priority NUMBER NOT NULL,
-  id_project  NUMBER NOT NULL,
-  id_responsable NUMBER,
-  id_creator NUMBER NOT NULL,
-  creation_date DATE DEFAULT SYSDATE
+  id_status NUMBER NOT NULL REFERENCES tm_status_t(id_status),
+  id_priority NUMBER NOT NULL REFERENCES tm_priorities_t(id_priority),
+  id_project  NUMBER NOT NULL REFERENCES tm_projects_t(id_project),
+  id_responsable NUMBER REFERENCES tm_users_t(id_user),
+  id_creator NUMBER NOT NULL REFERENCES tm_users_t(id_user),
+  creation_date DATE DEFAULT SYSDATE,
+  CONSTRAINT chk_task_date CHECK (previous_end_date > start_date)
 );
 
 -- TASKS DEPENDENCIES
 CREATE TABLE tm_task_dependencies_t(
   id_task_dependence NUMBER PRIMARY KEY,
-  id_task NUMBER NOT NULL,
-  id_dependent_task NUMBER NOT NULL
+  id_task NUMBER NOT NULL REFERENCES tm_tasks_t(id_task),
+  id_dependent_task NUMBER NOT NULL REFERENCES tm_tasks_t(id_task)
 );
 
 -- COMMENTS
 CREATE TABLE tm_comments_t(
   id_comment NUMBER PRIMARY KEY,
-  id_task NUMBER NOT NULL,
-  id_author NUMBER NOT NULL,
+  id_task NUMBER NOT NULL REFERENCES tm_tasks_t(id_task),
+  id_author NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   comment_text VARCHAR2(2000) NOT NULL,
   date_comment DATE DEFAULT SYSDATE
 );
@@ -106,21 +116,22 @@ CREATE TABLE tm_comments_t(
 -- STATUS HISTORY
 CREATE TABLE tm_status_history_t(
   id_history NUMBER PRIMARY KEY,
-  id_task NUMBER NOT NULL,
-  id_previous_status NUMBER NOT NULL,
-  id_new_status NUMBER NOT NULL,
-  id_changed_by NUMBER NOT NULL,
+  id_task NUMBER NOT NULL   REFERENCES tm_tasks_t(id_task),
+  id_previous_status NUMBER NOT NULL REFERENCES tm_status_t(id_status),
+  id_new_status NUMBER NOT NULL REFERENCES tm_status_t(id_status),
+  id_changed_by NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   change_date DATE DEFAULT SYSDATE
 );
 
 -- NOTIFICATIONS
 CREATE TABLE tm_notifications_t(
   id_notification NUMBER PRIMARY KEY,
-  id_receiver NUMBER NOT NULL,
-  id_task NUMBER NOT NULL,
+  id_receiver NUMBER NOT NULL REFERENCES tm_users_t(id_user),
+  id_task NUMBER NOT NULL REFERENCES tm_tasks_t(id_task),
   message VARCHAR2(500) NOT NULL,
-  notification_Date DATE DEFAULT SYSDATE,
-  notification_read CHAR(1) DEFAULT 'N'
+  notification_date DATE DEFAULT SYSDATE,
+  notification_read CHAR(1) DEFAULT 'N',
+  CONSTRAINT chk_notification_read CHECK (notification_read IN ('Y','N'))
 );
 
 -- AUDITORY LOG
@@ -131,7 +142,8 @@ CREATE TABLE tm_auditory_log_t(
   previous_data VARCHAR2(2000),
   new_data VARCHAR2(2000),
   operation_date DATE DEFAULT SYSDATE,
-  user_database VARCHAR2(50) DEFAULT USER
+  user_database VARCHAR2(50) DEFAULT USER,
+  CONSTRAINT chk_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE'))
 );
 
 -- ERROR LOG
@@ -143,7 +155,9 @@ CREATE TABLE tm_error_log_t(
   error_date DATE DEFAULT SYSDATE
 );
 
+--*********************--
 --=== SEQUENCES ===--
+--*********************--
 
 -- USERS
 CREATE SEQUENCE tm_users_s START WITH 1 INCREMENT BY 1;
@@ -178,8 +192,14 @@ CREATE SEQUENCE tm_auditory_log_s START WITH 1 INCREMENT BY 1;
 -- ERROR LOG
 CREATE SEQUENCE tm_error_log_s START WITH 1 INCREMENT BY 1;
 
+--*********************--
+--=== CONSTRAINTS ===--
+--*********************--
 
--- CONSTRAINTS --
+ALTER TABLE tm_team_users_t 
+ADD CONSTRAINT UQ_TEAMUSR_TEAM_USER UNIQUE (id_team,id_user);
 
+ALTER TABLE tm_task_dependencies_t
+ADD CONSTRAINT UQ_DEP_TASK_DEPENDENT UNIQUE (id_task, id_dependent_task);
 
 -- INDEXES --
