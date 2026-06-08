@@ -44,7 +44,7 @@ CREATE TABLE tm_users_t(
   job_title_user VARCHAR2(255),
   register_date DATE DEFAULT SYSDATE,
   active CHAR(1) DEFAULT 'Y',
-  CONSTRAINT chk_active CHECK (active IN ('Y','N'))
+  CONSTRAINT tm_chk_active CHECK (active IN ('Y','N'))
 );
 
 -- TEAMS
@@ -62,7 +62,7 @@ CREATE TABLE tm_team_users_t(
   id_user NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   job_title VARCHAR2(20) NOT NULL,
   entry_date DATE DEFAULT SYSDATE,
-  CONSTRAINT chk_job_title CHECK (job_title IN ('MEMBER','LEADER'))
+  CONSTRAINT tm_chk_job_title CHECK (job_title IN ('MEMBER','LEADER'))
 );
 
 -- PROJECTS
@@ -77,7 +77,7 @@ CREATE TABLE tm_projects_t(
   id_priority NUMBER NOT NULL REFERENCES tm_priorities_t(id_priority),
   id_responsable NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   creation_date  DATE DEFAULT SYSDATE,
-  CONSTRAINT chk_project_date CHECK (previous_end_date > start_date)
+  CONSTRAINT tm_chk_project_date CHECK (previous_end_date > start_date)
 );
 
 -- TASKS
@@ -94,7 +94,7 @@ CREATE TABLE tm_tasks_t(
   id_responsable NUMBER REFERENCES tm_users_t(id_user),
   id_creator NUMBER NOT NULL REFERENCES tm_users_t(id_user),
   creation_date DATE DEFAULT SYSDATE,
-  CONSTRAINT chk_task_date CHECK (previous_end_date > start_date)
+  CONSTRAINT tm_chk_task_date CHECK (previous_end_date > start_date)
 );
 
 -- TASKS DEPENDENCIES
@@ -131,7 +131,7 @@ CREATE TABLE tm_notifications_t(
   message VARCHAR2(500) NOT NULL,
   notification_date DATE DEFAULT SYSDATE,
   notification_read CHAR(1) DEFAULT 'N',
-  CONSTRAINT chk_notification_read CHECK (notification_read IN ('Y','N'))
+  CONSTRAINT tm_chk_notification_read CHECK (notification_read IN ('Y','N'))
 );
 
 -- AUDITORY LOG
@@ -143,7 +143,7 @@ CREATE TABLE tm_auditory_log_t(
   new_data VARCHAR2(2000),
   operation_date DATE DEFAULT SYSDATE,
   user_database VARCHAR2(50) DEFAULT USER,
-  CONSTRAINT chk_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE'))
+  CONSTRAINT tm_chk_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE'))
 );
 
 -- ERROR LOG
@@ -197,9 +197,20 @@ CREATE SEQUENCE tm_error_log_s START WITH 1 INCREMENT BY 1;
 --*********************--
 
 ALTER TABLE tm_team_users_t 
-ADD CONSTRAINT UQ_TEAMUSR_TEAM_USER UNIQUE (id_team,id_user);
+ADD CONSTRAINT TM_UQ_TEAMUSR_TEAM_USER UNIQUE (id_team,id_user);
 
 ALTER TABLE tm_task_dependencies_t
-ADD CONSTRAINT UQ_DEP_TASK_DEPENDENT UNIQUE (id_task, id_dependent_task);
+ADD CONSTRAINT TM_UQ_DEP_TASK_DEPENDENT UNIQUE (id_task, id_dependent_task);
 
--- INDEXES --
+--*********************--
+--=== INDEXES ===--
+--*********************--
+
+CREATE INDEX TM_IDX_TASK ON tm_tasks_t(id_project, id_responsable, id_status);
+CREATE INDEX TM_IDX_COM_TASK ON tm_comments_t(id_task);
+CREATE INDEX TM_IDX_NOTIFICATION ON tm_notifications_t(id_receiver,id_task);
+CREATE INDEX TM_IDX_HIS_TASK ON tm_status_history_t(id_task);
+CREATE INDEX TM_IDX_DEP_TASK ON tm_task_dependencies_t(id_task);
+CREATE INDEX TM_IDX_AUD_TABLE ON tm_auditory_log_t(affected_table);
+
+--*******************************--
