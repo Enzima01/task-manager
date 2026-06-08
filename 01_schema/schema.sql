@@ -60,7 +60,7 @@ CREATE TABLE tm_team_users_t(
   id_team_users  NUMBER PRIMARY KEY,
   id_team NUMBER NOT NULL REFERENCES tm_teams_t(id_team),
   id_user NUMBER NOT NULL REFERENCES tm_users_t(id_user),
-  job_title VARCHAR2(20) NOT NULL,
+  user_role VARCHAR2(20) NOT NULL, -- MEMBER or LEADER
   entry_date DATE DEFAULT SYSDATE,
   CONSTRAINT tm_chk_job_title CHECK (job_title IN ('MEMBER','LEADER'))
 );
