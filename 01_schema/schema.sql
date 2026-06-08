@@ -206,11 +206,11 @@ ADD CONSTRAINT TM_UQ_DEP_TASK_DEPENDENT UNIQUE (id_task, id_dependent_task);
 --=== INDEXES ===--
 --*********************--
 
-CREATE INDEX TM_IDX_TASK ON tm_tasks_t(id_project, id_responsable, id_status);
-CREATE INDEX TM_IDX_COM_TASK ON tm_comments_t(id_task);
-CREATE INDEX TM_IDX_NOTIFICATION ON tm_notifications_t(id_receiver,id_task);
-CREATE INDEX TM_IDX_HIS_TASK ON tm_status_history_t(id_task);
-CREATE INDEX TM_IDX_DEP_TASK ON tm_task_dependencies_t(id_task);
-CREATE INDEX TM_IDX_AUD_TABLE ON tm_auditory_log_t(affected_table);
+CREATE INDEX TM_IDX_TASK_I ON tm_tasks_t(id_project, id_responsable, id_status);
+CREATE INDEX TM_IDX_COM_TASK_I ON tm_comments_t(id_task);
+CREATE INDEX TM_IDX_NOTIFICATION_I ON tm_notifications_t(id_receiver,id_task);
+CREATE INDEX TM_IDX_HIS_TASK_I ON tm_status_history_t(id_task);
+CREATE INDEX TM_IDX_DEP_TASK_I ON tm_task_dependencies_t(id_task);
+CREATE INDEX TM_IDX_AUD_TABLE_I ON tm_auditory_log_t(affected_table);
 
 --*******************************--
